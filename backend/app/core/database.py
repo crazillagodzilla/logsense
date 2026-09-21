@@ -1,0 +1,79 @@
+import os
+from datetime import datetime
+from typing import Optional, List
+from sqlmodel import Field, SQLModel, create_engine, Session, Relationship
+
+# =====================================================================
+# 1. DATABASE CONNECTION CONFIGURATION
+# =====================================================================
+POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "logsense_db")
+
+DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,
+    pool_size=20,
+    max_overflow=10
+)
+
+# =====================================================================
+# 2. SQLMODEL / POSTGRESQL TABLES SCHEMA
+# =====================================================================
+
+class Log(SQLModel, table=True):
+    __tablename__ = "logs"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    timestamp: datetime = Field(default_factory=datetime.utcnow, index=True)
+    source_host: str = Field(index=True, max_length=100)
+    log_level: str = Field(index=True, max_length=20)
+    raw_message: str
+
+    template_id: Optional[int] = Field(default=None, index=True)
+    parsed_template: Optional[str] = Field(default=None)
+
+    incidents: List["Incident"] = Relationship(back_populates="trigger_log")
+
+
+class Incident(SQLModel, table=True):
+    __tablename__ = "incidents"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    severity: str = Field(index=True, max_length=20)
+    title: str = Field(max_length=255)
+    status: str = Field(default="OPEN", index=True, max_length=20)
+
+    trigger_log_id: Optional[int] = Field(default=None, foreign_key="logs.id")
+    trigger_log: Optional[Log] = Relationship(back_populates="incidents")
+
+    gemini_rca: str
+
+
+class Runbook(SQLModel, table=True):
+    __tablename__ = "runbooks"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(max_length=255)
+    category: str = Field(index=True, max_length=100)
+    content: str
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+# =====================================================================
+# 3. DATABASE INITIALIZATION & HELPER FUNCTIONS
+# =====================================================================
+
+def init_db():
+    SQLModel.metadata.create_all(engine)
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+if __name__ == "__main__":
+    init_db()
