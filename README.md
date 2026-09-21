@@ -26,3 +26,12 @@ cd ../frontend
 npm install
 npm run dev
 
+## 🌿 Git & Branching Workflow
+
+To keep the `main` branch stable, all team members should develop features on separate branches and submit Pull Requests.
+
+### 1. Update Your Local `main` Branch
+Always pull the latest changes before starting new work:
+```bash
+git checkout main
+git pull origin main
