@@ -1,22 +1,17 @@
-import os
 from datetime import datetime
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, create_engine, Session, Relationship
 
+from app.core.config import settings
+
 # =====================================================================
 # 1. DATABASE CONNECTION CONFIGURATION
 # =====================================================================
-POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "logsense_db")
-
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+DATABASE_URL = settings.database_url
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,
+    echo=settings.database_echo,
     pool_size=20,
     max_overflow=10
 )
@@ -45,6 +40,7 @@ class Incident(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     severity: str = Field(index=True, max_length=20)
     title: str = Field(max_length=255)
     status: str = Field(default="OPEN", index=True, max_length=20)
@@ -62,6 +58,7 @@ class Runbook(SQLModel, table=True):
     title: str = Field(max_length=255)
     category: str = Field(index=True, max_length=100)
     content: str
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 # =====================================================================

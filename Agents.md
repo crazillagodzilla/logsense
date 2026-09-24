@@ -4,7 +4,7 @@
 LogSense is a real-time AIOps log analytics platform built to detect point anomalies and generate automated AI Root Cause Analysis (RCA) reports using RAG.
 
 ### Core Data Flow
-Filebeat ──► FastAPI Ingestion ──► PostgreSQL (SQLModel) ──► LogAI Engine (Drain Parser + Isolation Forest) ──► FAISS + Gemini API (RAG RCA) ──► React Dashboard
+Filebeat ──► FastAPI Ingestion ──► PostgreSQL (SQLModel) ──► (Drain Parser + Isolation Forest) ──► FAISS + Gemini API (RAG RCA) ──► React Dashboard
 
 ---
 
@@ -26,7 +26,7 @@ AI agents must strictly respect technical domain boundaries to prevent cross-mod
 * **Database Schema Modifications:** Do NOT alter `database.py` models (`Log`, `Incident`, `Runbook`) unless explicitly requested by the Schema Lead.
 
 ### Machine Learning & Vector Search
-* **Model Choice:** Use Scikit-Learn `IsolationForest` for anomaly scoring. Do not swap to DBSCAN or deep learning models.
+* **Model Choice:** The Models are trained in colab and stored at artifacts read "Models.md" for more info.
 * **Vector Embeddings:** Use `sentence-transformers/all-MiniLM-L6-v2` to generate embeddings for FAISS runbook indexing.
 * **Scope Constraint:** Focus pipeline evaluation exclusively on **application server** and **database log** sources for Semester 1.
 
