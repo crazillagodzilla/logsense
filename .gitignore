@@ -39,14 +39,17 @@ secrets.json
 # ==========================================
 # 5. ML Models & Vector Index Artifacts
 # ==========================================
-# Large dataset downloads (Loghub HDFS/BGL raw files)
-ai_pipeline/data/*
-!ai_pipeline/data/.gitkeep
+# Global model extensions (catches .joblib files anywhere in the repo)
+*.joblib
+*.pkl
+*.pth
 
-# Large pre-trained or exported ML model binaries
-ai_pipeline/models/*.joblib
-ai_pipeline/models/*.pkl
-ai_pipeline/models/*.pth
+# Large dataset downloads & model directories
+backend/ai_pipeline/data/*
+!backend/ai_pipeline/data/.gitkeep
+
+backend/ai_pipeline/models/*
+!backend/ai_pipeline/models/.gitkeep
 
 # Local FAISS vector index files
 faiss_index/*
@@ -69,12 +72,10 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# VS Code & PyCharm / JetBrains
+# VS Code & PyCharm / JetBrains (Ignores all VS Code settings)
 .vscode/
-!.vscode/settings.json
 .idea/
 *.sublime-workspace
-
 # ==========================================
 # 7. Logs & Temporary Files
 # ==========================================
