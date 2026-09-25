@@ -24,6 +24,7 @@ AI agents must strictly respect technical domain boundaries to prevent cross-mod
 * **Async Ingestion:** Keep log ingestion routes non-blocking. Always offload Drain3 parsing and Isolation Forest evaluations to background tasks or async queues (`BackgroundTasks` in FastAPI).
 * **Environment Variables:** Never hardcode database URIs, API keys, or host ports. Use `os.getenv` with sensible fallbacks.
 * **Database Schema Modifications:** Do NOT alter `database.py` models (`Log`, `Incident`, `Runbook`) unless explicitly requested by the Schema Lead.
+* **Legacy Store Cleanup:** Do not reintroduce the legacy in-memory store or `app/services/store.py`; prefer DB-backed analytics and incident flows that are persisted in PostgreSQL.
 
 ### Machine Learning & Vector Search
 * **Model Choice:** The Models are trained in colab and stored at artifacts read "Models.md" for more info.
@@ -47,4 +48,5 @@ AI agents must strictly respect technical domain boundaries to prevent cross-mod
 - Run Backend: `uvicorn backend.app.main:app --reload`
 - Run Frontend: `cd frontend && npm run dev`
 - Test Chaos Generator: `python ingestion/chaos/chaos_engine.py --crash`
+- Test RAG pipeline: `cd backend && PYTHONPATH=. pytest tests/test_rag_pipeline.py -q`
 

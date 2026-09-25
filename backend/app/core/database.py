@@ -1,5 +1,12 @@
+import fcntl
+import os
+import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Optional, List
+
+from alembic import command
+from alembic.config import Config
 from sqlmodel import Field, SQLModel, create_engine, Session, Relationship
 
 from app.core.config import settings
@@ -65,8 +72,29 @@ class Runbook(SQLModel, table=True):
 # 3. DATABASE INITIALIZATION & HELPER FUNCTIONS
 # =====================================================================
 
+def _should_skip_migration_on_reload() -> bool:
+    argv = " ".join(sys.argv).lower()
+    reload_flags = {"--reload", "--reload-dir", "--reload-include", "--reload-exclude"}
+    if any(flag in argv for flag in reload_flags):
+        return True
+    return os.getenv("UVICORN_RELOAD", "").lower() in {"1", "true", "yes"}
+
+
 def init_db():
-    SQLModel.metadata.create_all(engine)
+    if _should_skip_migration_on_reload():
+        return
+
+    alembic_cfg = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    lock_path = Path(__file__).resolve().parents[2] / ".migration.lock"
+
+    with lock_path.open("w") as lock_file:
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+
+        command.upgrade(alembic_cfg, "head")
+
 
 def get_session():
     with Session(engine) as session:

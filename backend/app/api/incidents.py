@@ -14,6 +14,7 @@ from app.models.schemas import (
     IncidentSummary,
     TriggerLog,
 )
+from app.services import ai_service, rag_service
 
 router = APIRouter(prefix="/incidents", tags=["incidents"])
 
@@ -69,6 +70,27 @@ def get_incident(
         raise HTTPException(status_code=404, detail="Incident not found")
     if incident.trigger_log_id and not incident.trigger_log:
         incident.trigger_log = session.get(Log, incident.trigger_log_id)
+
+    if (
+        not incident.gemini_rca
+        or "FAISS-backed RAG retrieval" in incident.gemini_rca
+    ):
+        trigger_log = incident.trigger_log
+        raw_message = trigger_log.raw_message if trigger_log else ""
+        template_sequence = ""
+        if raw_message:
+            template_sequence = ai_service.parse_log_template(raw_message)[0] or ""
+            if template_sequence:
+                template_sequence = str(template_sequence)
+        incident.gemini_rca = rag_service.generate_incident_rca(
+            template_sequence=template_sequence,
+            raw_message=raw_message,
+            top_k=3,
+        )
+        session.add(incident)
+        session.commit()
+        session.refresh(incident)
+
     return to_incident_detail(incident)
 
 
