@@ -4,7 +4,7 @@
 LogSense is a real-time AIOps log analytics platform built to detect point anomalies and generate automated AI Root Cause Analysis (RCA) reports using RAG.
 
 ### Core Data Flow
-Filebeat ──► FastAPI Ingestion ──► PostgreSQL (SQLModel) ──► LogAI Engine (Drain Parser + Isolation Forest) ──► FAISS + Gemini API (RAG RCA) ──► React Dashboard
+Filebeat ──► FastAPI Ingestion ──► PostgreSQL (SQLModel) ──► (Drain Parser + Isolation Forest) ──► FAISS + Gemini API (RAG RCA) ──► React Dashboard
 
 ---
 
@@ -24,9 +24,10 @@ AI agents must strictly respect technical domain boundaries to prevent cross-mod
 * **Async Ingestion:** Keep log ingestion routes non-blocking. Always offload Drain3 parsing and Isolation Forest evaluations to background tasks or async queues (`BackgroundTasks` in FastAPI).
 * **Environment Variables:** Never hardcode database URIs, API keys, or host ports. Use `os.getenv` with sensible fallbacks.
 * **Database Schema Modifications:** Do NOT alter `database.py` models (`Log`, `Incident`, `Runbook`) unless explicitly requested by the Schema Lead.
+* **Legacy Store Cleanup:** Do not reintroduce the legacy in-memory store or `app/services/store.py`; prefer DB-backed analytics and incident flows that are persisted in PostgreSQL.
 
 ### Machine Learning & Vector Search
-* **Model Choice:** Use Scikit-Learn `IsolationForest` for anomaly scoring. Do not swap to DBSCAN or deep learning models.
+* **Model Choice:** The Models are trained in colab and stored at artifacts read "Models.md" for more info.
 * **Vector Embeddings:** Use `sentence-transformers/all-MiniLM-L6-v2` to generate embeddings for FAISS runbook indexing.
 * **Scope Constraint:** Focus pipeline evaluation exclusively on **application server** and **database log** sources for Semester 1.
 
@@ -47,4 +48,5 @@ AI agents must strictly respect technical domain boundaries to prevent cross-mod
 - Run Backend: `uvicorn backend.app.main:app --reload`
 - Run Frontend: `cd frontend && npm run dev`
 - Test Chaos Generator: `python ingestion/chaos/chaos_engine.py --crash`
+- Test RAG pipeline: `cd backend && PYTHONPATH=. pytest tests/test_rag_pipeline.py -q`
 

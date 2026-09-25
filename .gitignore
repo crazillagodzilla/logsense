@@ -1,0 +1,85 @@
+# ==========================================
+# 1. Python Bytecode & Cache Files
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# 2. Virtual Environments
+# ==========================================
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# 3. Environment Variables & Credentials
+# ==========================================
+# API keys (Gemini API Key, DB Passwords, etc.)
+.env
+.env.*
+!.env.example
+secrets.json
+
+# ==========================================
+# 4. Database & Storage Files
+# ==========================================
+# Local SQLite/Postgres dump files or test databases
+*.db
+*.sqlite3
+*.dump
+*.sql
+
+# ==========================================
+# 5. ML Models & Vector Index Artifacts
+# ==========================================
+# Global model extensions (catches .joblib files anywhere in the repo)
+*.joblib
+*.pkl
+*.pth
+
+# Large dataset downloads & model directories
+backend/ai_pipeline/data/*
+!backend/ai_pipeline/data/.gitkeep
+
+backend/ai_pipeline/models/*
+!backend/ai_pipeline/models/.gitkeep
+
+# Local FAISS vector index files
+faiss_index/*
+!faiss_index/.gitkeep
+
+# Drain3 state persistence files
+*.bin
+*.json.drain
+
+# ==========================================
+# 6. IDEs, Editors & OS Metadata
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VS Code & PyCharm / JetBrains (Ignores all VS Code settings)
+.vscode/
+.idea/
+*.sublime-workspace
+# ==========================================
+# 7. Logs & Temporary Files
+# ==========================================
+*.log
+logs/
+*.tmp
+*.temp
