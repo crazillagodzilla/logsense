@@ -11,6 +11,8 @@ import pandas as pd
 import scipy.sparse as sp
 from sklearn.exceptions import InconsistentVersionWarning
 
+from app.core.model_artifacts import ensure_model_artifacts
+
 
 MODEL_DIR = Path(__file__).resolve().parents[2] / "ai_pipeline" / "models"
 BLOCK_ID_PATTERN = re.compile(r"(blk_-?\d+)")
@@ -43,12 +45,13 @@ class AnomalyDetector:
     def __init__(self, model_dir: Path = MODEL_DIR) -> None:
         self.model_dir = model_dir
         self._lock = Lock()
+        artifact_paths = ensure_model_artifacts(model_dir)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", InconsistentVersionWarning)
-            self.template_miner = joblib.load(model_dir / "drain3_template_miner.joblib")
-            self.vectorizer = joblib.load(model_dir / "tfidf_vectorizer.joblib")
-            self.scaler = joblib.load(model_dir / "metadata_scaler.joblib")
-            self.model = joblib.load(model_dir / "best_anomaly_detector.joblib")
+            self.template_miner = joblib.load(artifact_paths[0])
+            self.vectorizer = joblib.load(artifact_paths[1])
+            self.scaler = joblib.load(artifact_paths[2])
+            self.model = joblib.load(artifact_paths[3])
 
     def parse(self, raw_message: str) -> ParsedLogTemplate:
         with self._lock:
