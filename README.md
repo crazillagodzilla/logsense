@@ -157,6 +157,32 @@ The backend now includes a DB-backed FAISS runbook index:
 - The incident RCA path retrieves the most relevant runbooks and includes them in the Gemini prompt
 - If Gemini is unavailable, the backend falls back to a Markdown-safe RCA response using the retrieved runbook context
 
+## Demo Data & Pipeline Validation
+
+### Seed demo runbooks
+Use the seeding script to populate the database with realistic operational runbooks for the demo and RAG workflow:
+
+```bash
+cd logsense
+python3 scripts/seed_demo_runbooks.py
+```
+
+This posts real runbook records through the API and indexes them into the FAISS-backed retrieval pipeline.
+
+### Generate synthetic failure traffic
+Use the chaos generator to produce a mix of normal and failure log traffic directly to the ingest API for validation:
+
+```bash
+cd logsense
+python3 ingestion/chaos/chaos_engine.py
+python3 ingestion/chaos/chaos_engine.py --crash --loops 3
+```
+
+The default mode produces normal traffic with occasional anomalies. The `--crash` flag creates a concentrated burst of failure logs to test ingestion, anomaly detection, and incident creation.
+
+### Filebeat route
+Once Filebeat is installed locally or in a collector environment, the same log flow can be shipped through the Filebeat configuration in `ingestion/filebeat/filebeat.yml` to validate the end-to-end collection path.
+
 ## Testing
 
 Run the focused validation suite for the RAG pipeline:
