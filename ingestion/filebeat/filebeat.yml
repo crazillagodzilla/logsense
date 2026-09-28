@@ -1,0 +1,44 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /tmp/logsense/app.log
+    scan_frequency: 1s
+    fields_under_root: true
+    fields:
+      source_host: app-server-01
+      service: app
+    processors:
+      - rename:
+          fields:
+            - from: message
+              to: raw_message
+      - script:
+          lang: javascript
+          source: |
+            function process(event) {
+              var msg = (event.Get("raw_message") || "").toUpperCase();
+              if (msg.includes("ERROR") || msg.includes("FAIL") || msg.includes("EXCEPTION")) {
+                event.Put("log_level", "ERROR");
+              } else if (msg.includes("WARN") || msg.includes("SLOW")) {
+                event.Put("log_level", "WARN");
+              } else {
+                event.Put("log_level", "INFO");
+              }
+              return event;
+            }
+
+filebeat.registry.path: /tmp/logsense/filebeat-registry
+
+output.http:
+  hosts: ["http://localhost:8000"]
+  path: "/api/v1/logs/ingest"
+  method: "POST"
+  headers:
+    Content-Type: application/json
+  flush_interval: 1s
+  timeout: 10s
+  format: "json"
+  json.keys_under_root: true
+
+logging.metrics.enabled: false
